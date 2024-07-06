@@ -19,8 +19,7 @@ router.post('/user/edit-user', isAuth,
     body("phoneNumber", "Please enter your phone number").isNumeric().not().isEmpty(),
     body('address').trim().not().isEmpty(),
     body('apartmentNumber').isAlphanumeric().trim().not().isEmpty(),
-    body('password','please enter an alphanumeric password with at least 5 characters').isLength({min:5}).isAlphanumeric().trim(),
-    body('email').isEmail().withMessage('please enter a valid email.').normalizeEmail()
+    body('email').isEmail().withMessage('please enter a valid email.')
 ] 
 , userController.postEditUser);
 
@@ -34,6 +33,11 @@ router.post("/user/get-water-consumption", isAuth, userController.getConsumption
 
 router.post("/user/payment", isAuth, userController.payment);
 
+router.post("/user/forget-password", isAuth, userController.forgetPassword);
+
+router.post("/user/reset-password", isAuth, userController.resetPassword);
+
+router.post("/user/change-password", isAuth, userController.changePassword);
 
 
 module.exports = router;

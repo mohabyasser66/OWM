@@ -6,6 +6,8 @@ const Meter = require('../models/meter');
 const mongoose = require('mongoose');
 const bcrypt = require("bcryptjs");
 const pdfDocument = require("pdfkit");
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 const { validationResult } = require('express-validator');
 const month = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -22,8 +24,15 @@ exports.getUserData = async (req,res,next) => {
   try{
     if(userId === req.userId){
       res.status(200).json({
-        user: user,
-        message: "User fetched successfully."
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        userName: user.userName,
+        phoneNumber: user.phoneNumber,
+        address: user.address,
+        apartmentNumber: user.apartmentNumber,
+        gender: user.gender,
+        age: user.age
       });
     }
     else{
@@ -79,7 +88,7 @@ exports.postEditUser = async (req,res,next) => {
     error.statusCode = 403;
     throw error;
   }
-  const updatedPassword = await bcrypt.hash(req.body.password,12);
+  // const updatedPassword = await bcrypt.hash(req.body.password,12);
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -91,8 +100,8 @@ exports.postEditUser = async (req,res,next) => {
       const user = await User.findById(userId);
       user.firstName = req.body.firstName;
       user.lastName = req.body.lastName;
-      user.email = req.body.email;;
-      user.password = updatedPassword;
+      user.email = req.body.email;
+      // user.password = updatedPassword;
       user.username = req.body.username;
       user.phoneNumber = req.body.phoneNumber;
       user.address = req.body.address;
@@ -256,4 +265,96 @@ exports.payment = async (req,res,next) => {
   pdfDoc.fontSize(20).text('Total price: $' + totalPrice);
   pdfDoc.end();
 
+}
+
+
+exports.forgetPassword = async (req,res,next) => {
+  const user = await User.findOne({ email: req.body.email});
+  if (!user) {
+    const error = new Error("Could not find user");
+    error.statusCode = 404;
+    throw error;
+  }
+  const resetToken = crypto.randomBytes(20).toString('hex');
+  user.resetPasswordToken = resetToken;
+  user.resetPasswordExpires = Date.now() + 3600000;
+  await user.save();
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'oracleowm@gmail.com',
+      pass: 'rhsd wtov blza evqm'
+    },
+  });
+  transporter.sendMail({
+    to: req.body.email,
+    subject: "Password Reset",
+    html: `
+          <p>you requested a password reset.</p>
+          <p>click this <a href="http://localhost:3000/reset/${resetToken}">Link</a> to set a new password.</p>
+        `
+  },(err,response) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error sending email' });
+    }
+    res.status(200).json({ message: 'Password reset link sent' });
+  }
+);
+}
+
+
+exports.resetPassword = async (req,res,next) => {
+  const token = req.body.token;
+  const newPassword = req.body.newPassword;
+
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    return res.status(400).json({ message: 'Invalid or expired token' });
+  }
+  const hashedPassword = await bcrypt.hash(newPassword, 12);
+  user.password = hashedPassword;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+
+  await user.save();
+
+  res.status(200).json({ message: 'Password reset successfully' });
+}
+
+
+exports.changePassword = async (req,res,next) => {
+  const user = await User.findById(req.userId);
+  if(!user){
+    const error = new Error("Could not find user");
+    error.statusCode = 404;
+    throw error;
+  }
+  const isEqual = await bcrypt.compare(req.body.currentPassword,user.password);
+  try{
+    if(isEqual){
+      const newPassword = req.body.newPassword;
+      const newHashedPassword = await bcrypt.hash(newPassword,12);
+      user.password = newHashedPassword;
+      await user.save();
+      res.status(200).json({
+        message : "Password Changed Successfully."
+      })
+    }
+    else{
+      res.status(404).json({
+        message: "The Password is incorrect."
+      })
+    }
+  }
+  catch(err){
+    if(!err.statusCode){
+      err.statusCode = 500;
+    }
+    next(err);
+  } 
+  
 }

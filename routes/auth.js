@@ -9,7 +9,7 @@ const User = require('../models/user');
 
 
 router.post('/login', [
-    body('email').isEmail().withMessage('please enter a valid email address').normalizeEmail(),
+    body('email').isEmail().withMessage('please enter a valid email address'),
     body('password','Password has to be valid').isLength({min:5}).isAlphanumeric().trim()
 ] ,authController.login);
 

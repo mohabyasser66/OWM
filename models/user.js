@@ -53,6 +53,12 @@ const userSchema = new Schema({
     age:{
         type: Number,
         required: true
+    },
+    resetPasswordToken:{
+        type: String
+    },
+    resetPasswordExpires: {
+        type: Date
     }
 })
 
