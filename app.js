@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const express = require("express");
-const mqtt = require("mqtt");
+const mqtt = require('mqtt');
 
-require("dotenv").config();
+require
 
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
@@ -49,9 +49,9 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message: message, data: data });
 });
 
-mongoose
-  .connect(process.env.MONGO_URL)
-  .then((result) => {
+
+mongoose.connect("mongodb+srv://nodejs:862475139@cluster0.ib29zfy.mongodb.net/OWM?retryWrites=true&w=majority")
+.then(result => {
     app.listen(3000);
     console.log("connected to the database");
   })

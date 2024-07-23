@@ -62,10 +62,18 @@ exports.litersConsumed = async (req,res,next) => {
     }
     const litersss = req.body.liters;
     try{
-        meter.litersConsumed.push({
-            liters: meter.litersConsumed[meter.litersConsumed.length - 1].liters + Number(litersss),
-            timeStamp: Date.now()
-        });
+        if(meter.litersConsumed.length > 0){
+            meter.litersConsumed.push({
+                liters: meter.litersConsumed[meter.litersConsumed.length - 1].liters + Number(litersss),
+                timeStamp: Date.now()
+            });
+        }
+        else{
+            meter.litersConsumed.push({
+                liters: Number(litersss),
+                timeStamp: Date.now()
+            });
+        }
         await meter.save();
         res.status(200).json({
             "message" : "Liters Stored Successfully."

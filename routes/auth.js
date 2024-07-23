@@ -21,7 +21,7 @@ router.put('/signup',[
               return Promise.reject('Email exists already, please pick a different one');
             }
         })
-    }).normalizeEmail(),
+    }),
     body('password','please enter an alphanumeric password with at least 5 characters')
     .isLength({min:5})
     .isAlphanumeric().trim(),
