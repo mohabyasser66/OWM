@@ -139,6 +139,31 @@ exports.addMeter = async (req,res,next) => {
     }
 }
 
+exports.deleteMeter = async (req,res,next) => {
+    const meterId = req.body.meterId;
+    const userId = req.body.userId;
+    const meter = await Meter.findById(meterId);
+    const user = await User.findById(userId);
+    if(!meter || !user){
+        const error = new Error("Could not find the meter or its owner.");
+        error.statusCode = 404;
+        throw error;
+    }
+    try{
+        const meterIndex = user.meters.indexOf(meterId);
+        user.meters.splice(meterIndex,1);
+        await user.save();
+        await Meter.findByIdAndDelete(meterId);
+        res.status(201).json({ message: "Meter Deleted Successfully."});
+    }
+    catch(err){
+        if(!err.statusCode){
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+}
+
 exports.addUser = async (req,res,next) => {
     const errors = validationResult(req);
     if(!errors.isEmpty()){

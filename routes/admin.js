@@ -53,4 +53,6 @@ router.post('/admin/delete-user', isAuth, restrictTo('admin'), adminController.d
 
 router.post("/admin/add-meter", isAuth, restrictTo("admin"), adminController.addMeter);
 
+router.post("/admin/delete-meter", isAuth, restrictTo("admin"), adminController.deleteMeter);
+
 module.exports = router;
