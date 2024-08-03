@@ -12,7 +12,7 @@ const meterScehma = new Schema({
     //     enum: ['true','false'],
     //     default: 'false'
     // },
-    litersConsumed:[{
+    liters_consumed:[{
         liters:{
             type: Number,
             default: 0
@@ -23,10 +23,10 @@ const meterScehma = new Schema({
         }
     }],
     data:[{
-        waterFlowSensor:{
+        flow_rate:{
             type: Number
         },
-        pressureSensor:{
+        pressure_rate:{
             type: Number
         },
         timeStamp: {

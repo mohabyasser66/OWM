@@ -41,14 +41,18 @@ app.use(meterRoutes);
 //   console.error('Error:', error);
 // });
 
-app.use((err, req, res, next) => {
+app.use( (err,req,res,next) => {
   console.log(err);
   const status = err.statusCode || 500;
   const message = err.message;
   const data = err.data;
-  res.status(status).json({ message: message, data: data });
+  res.status(status).json({message:message, data:data});
 });
 
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
 
 mongoose.connect(process.env.MONGO_URL)
 .then(result => {

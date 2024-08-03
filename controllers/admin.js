@@ -7,12 +7,12 @@ const bcrypt = require('bcryptjs');
 
 exports.getUsers = async(req,res,next) => {
     const users = await User.find();
-    if(!users){
-        const error = new Error('no users found');
-        error.statusCode = 404;
-        throw error;
-    }
     try{
+        if(!users){
+            const error = new Error('no users found');
+            error.statusCode = 404;
+            throw error;
+        }
         res.status(200).json({
             users:users,
             message:'users fetched successfully'
@@ -30,12 +30,12 @@ exports.getUsers = async(req,res,next) => {
 exports.getEditUser = async (req,res,next) => {
     const userId = req.body.userId;
     const user = await User.findById(userId);
-    if(!user) {
-        const error = new Error('user could not be found.');
-        error.statusCode = 404;
-        throw error;
-    }
     try{
+        if(!user) {
+            const error = new Error('user could not be found.');
+            error.statusCode = 404;
+            throw error;
+        }
         res.status(200).json({
             message:'User Fetched',
             user: user
@@ -54,13 +54,12 @@ exports.postEditUser = async (req,res,next) => {
     const userId = req.body.userId;
     const updatedPassword = await bcrypt.hash(req.body.password,12);
     const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-        const error = new Error('Validation failed, entered data is incorrect.');
-        error.statusCode = 422;
-        throw error;
-    }
     try{
+        if (!errors.isEmpty()) {
+            const error = new Error('Validation failed, entered data is incorrect.');
+            error.statusCode = 422;
+            throw error;
+        }
         const user = await User.findById(userId);
         user.firstName = req.body.firstName;
         user.lastName = req.body.lastName;
@@ -88,15 +87,15 @@ exports.postEditUser = async (req,res,next) => {
 exports.deleteUser = async (req,res,next) => {
     const userId = req.body.userId;
     const user = await User.findById(userId);
-    if (!user) {
-    const error = new Error('Could not find user.');
-    error.statusCode = 404;
-    throw error;
-    }
     try{
+        if (!user) {
+            const error = new Error('Could not find user.');
+            error.statusCode = 404;
+            throw error;
+        }
         const metersId = user.meters;
         for(let i = 0; i < metersId.length; i++){
-            Meter.findByIdAndDelete(metersId[i]);
+            await Meter.findByIdAndDelete(metersId[i]);
         }
         await User.findByIdAndDelete(userId);
         res.status(200).json({ message: 'User Deleted.' });
@@ -114,12 +113,12 @@ exports.addMeter = async (req,res,next) => {
     const meterId = req.body.meterId;
     const userId = req.body.userId;
     const user = await User.findById(userId);
-    if(!user){
-        const error = new Error("Could not find user");
-        error.statusCode = 404;
-        throw error;
-    }
     try{
+        if(!user){
+            const error = new Error("Could not find user");
+            error.statusCode = 404;
+            throw error;
+        }
         user.meters.push(meterId);
         await user.save();
         const meter = new Meter({
@@ -144,12 +143,17 @@ exports.deleteMeter = async (req,res,next) => {
     const userId = req.body.userId;
     const meter = await Meter.findById(meterId);
     const user = await User.findById(userId);
-    if(!meter || !user){
-        const error = new Error("Could not find the meter or its owner.");
-        error.statusCode = 404;
-        throw error;
-    }
     try{
+        if(!meter){
+            const error = new Error("Could not find the meter.");
+            error.statusCode = 404;
+            throw error;
+        }
+        if(!user){
+            const error = new Error("Could not find user to this meter.");
+            error.statusCode = 404;
+            throw error;
+        }
         const meterIndex = user.meters.indexOf(meterId);
         user.meters.splice(meterIndex,1);
         await user.save();
@@ -166,14 +170,14 @@ exports.deleteMeter = async (req,res,next) => {
 
 exports.addUser = async (req,res,next) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        const error = new Error('validation failed.');
-        error.statusCode = 422;
-        error.data = errors.array();
-        throw error;
-    }
     const password = req.body.password;
     try{
+        if(!errors.isEmpty()){
+            const error = new Error('validation failed.');
+            error.statusCode = 422;
+            error.data = errors.array();
+            throw error;
+        }
         const hashedPw = await bcrypt.hash(password,12);
         
         const user = new User({

@@ -67,7 +67,23 @@ exports.login = async (req,res,next) => {
         'somesupersecretsecret',
         {expiresIn: '2h'}
         );
-         res.status(200).json({ token: token, userId: loadedUser._id.toString(), role: loadedUser.role});
+        res.status(200).json({ 
+            message: "Logged In Successfully", 
+            user:{
+                id: loadedUser._id.toString(),
+                username: loadedUser.userName,
+                first_name: loadedUser.firstName,
+                last_name: loadedUser.lastName,
+                email: loadedUser.email,
+                phone: loadedUser.phoneNumber.toString(),
+                role: loadedUser.role,
+                token_data:{
+                    access_token: token,
+                    token_type: "jwt",
+                    expires_in: String( Date.now() + 7200000 )
+                }
+            }
+        });
     
     }
     catch(err) {

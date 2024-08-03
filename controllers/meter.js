@@ -7,12 +7,12 @@ const Meter = require('../models/meter');
 exports.leakageDetected = async (req,res,next) => {
     const meterId = req.body.meterId;
     const meter = await Meter.findById(meterId);
-    if(!meter){
-        const error = new Error("Couldn't find meter.");
-        error.statusCode = 404;
-        throw error;
-    }
     try{
+        if(!meter){
+            const error = new Error("Couldn't find meter.");
+            error.statusCode = 404;
+            throw error;
+        }
         // client.publish(`${req.userId}`, 'Your meter detected a leakage');
         meter.leakage = 'true';
         await meter.save();
@@ -28,17 +28,17 @@ exports.leakageDetected = async (req,res,next) => {
 
 exports.receiveData = async (req,res,next) => {
     const meter = await Meter.findById(req.body.meterId);
-    if(!meter){
-        const error = new Error("Couldn't find meter.");
-        error.statusCode = 404;
-        throw error;
-    }
-    const data = {
-        waterFlowSensor: req.body.waterFlowSensor,
-        pressureSensor: req.body.pressureSensor,
-        timeStamp: Date.now()
-    }
     try{
+        if(!meter){
+            const error = new Error("Couldn't find meter.");
+            error.statusCode = 404;
+            throw error;
+        }
+        const data = {
+            flow_rate: req.body.flow_rate,
+            pressure_rate: req.body.pressure_rate,
+            timeStamp: Date.now()
+        }
         meter.data.push(data);
         await meter.save();
         res.status(200).json({

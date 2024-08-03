@@ -16,12 +16,12 @@ const month = ["January","February","March","April","May","June","July","August"
 exports.getUserData = async (req,res,next) => {
   const userId = req.body.userId;
   const user = await User.findById(userId);
-  if(!user){
-    const error = new Error("Couldn't find user.")
-    error.statusCode = 404;
-    throw error;
-  }
   try{
+    if(!user){
+      const error = new Error("Couldn't find user.")
+      error.statusCode = 404;
+      throw error;
+    }
     if(userId === req.userId){
       res.status(200).json({
         email: user.email,
@@ -55,15 +55,21 @@ exports.getUserData = async (req,res,next) => {
 exports.getMeterData = async (req,res,next) => {
   const meterId = req.body.meterId;
   const meter = await Meter.findById(meterId);
-  if(!meter){
-    const error = new Error("couldn't find meter");
-    error.statusCode = 404;
-    throw error
-  }
   try{
+    if(!meter){
+      const error = new Error("couldn't find meter");
+      error.statusCode = 404;
+      throw error
+    }
     if(req.userId === meter.userId.toString()){
       res.status(200).json({
-        data: meter.data
+        message: "Meter Data Fetched Successfully",
+        IoTDevice: {
+          id: meter._id,
+          flow_status: meter.valveStatus,
+          connection_status: "Connected",
+          readings: meter.data
+        }
       });
     }
     else{
@@ -83,34 +89,33 @@ exports.getMeterData = async (req,res,next) => {
 
 exports.postEditUser = async (req,res,next) => {
   const userId = req.body.userId;
-  if(userId !== req.userId){
-    const error = new Error('Not authorized!');
-    error.statusCode = 403;
-    throw error;
-  }
   // const updatedPassword = await bcrypt.hash(req.body.password,12);
   const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    const error = new Error('Validation failed, entered data is incorrect.');
-    error.statusCode = 422;
-    throw error;
-  }
   try{
-      const user = await User.findById(userId);
-      user.firstName = req.body.firstName;
-      user.lastName = req.body.lastName;
-      user.email = req.body.email;
-      // user.password = updatedPassword;
-      user.username = req.body.username;
-      user.phoneNumber = req.body.phoneNumber;
-      user.address = req.body.address;
-      user.apartmentNumber = req.body.apartmentNumber;
-      const result = await user.save();
-      res.status(200).json({
-          message:'User Updated',
-          user: result
-      });
+    if(userId !== req.userId){
+      const error = new Error('Not authorized!');
+      error.statusCode = 403;
+      throw error;
+    }
+    if (!errors.isEmpty()) {
+      const error = new Error('Validation failed, entered data is incorrect.');
+      error.statusCode = 422;
+      throw error;
+    }
+    const user = await User.findById(userId);
+    user.firstName = req.body.firstName;
+    user.lastName = req.body.lastName;
+    user.email = req.body.email;
+    // user.password = updatedPassword;
+    user.username = req.body.username;
+    user.phoneNumber = req.body.phoneNumber;
+    user.address = req.body.address;
+    user.apartmentNumber = req.body.apartmentNumber;
+    const result = await user.save();
+    res.status(200).json({
+        message:'User Updated',
+        user: result
+    });
   }
   catch(err) {
       if (!err.statusCode) {
@@ -125,12 +130,12 @@ exports.postEditUser = async (req,res,next) => {
 exports.userAddMeter = async (req,res,next) => {
   const meterId = req.body.meterId;
   const user = await User.findById(req.userId);
-  if(!user){
-    const error = new Error("Could not find user");
-    error.statusCode = 404;
-    throw error;
-  }
   try{
+    if(!user){
+      const error = new Error("Could not find user");
+      error.statusCode = 404;
+      throw error;
+    }
     user.meters.push(new mongoose.Types.ObjectId(meterId));
     await user.save();
     const meter = new Meter({
@@ -155,12 +160,12 @@ exports.userAddMeter = async (req,res,next) => {
 exports.getLitersConsumed = async (req,res,next) => {
   const meterId = req.body.meterId;
   const meter = await Meter.findById(meterId);
-  if(!meter){
-    const error = new Error("couldn't find meter");
-    error.statusCode = 404;
-    throw error
-  }
   try{
+    if(!meter){
+      const error = new Error("couldn't find meter");
+      error.statusCode = 404;
+      throw error
+    }
     if(req.userId === meter.userId.toString()){
       res.status(200).json({
         liters: meter.litersConsumed
@@ -184,12 +189,12 @@ exports.getLitersConsumed = async (req,res,next) => {
 exports.getMeterMoney = async (req,res,next) => {
   const meterId = req.body.meterId;
   const meter = await Meter.findById(meterId);
-  if(!meter){
-    const error = new Error("couldn't find meter");
-    error.statusCode = 404;
-    throw error
-  }
   try{
+    if(!meter){
+      const error = new Error("couldn't find meter");
+      error.statusCode = 404;
+      throw error
+    }
     if(req.userId === meter.userId.toString()){
       res.status(200).json({
         money: meter.money
@@ -215,12 +220,12 @@ exports.getConsumption = async (req,res,next) => {
   const fromDate = req.body.fromDate;
   const toDate = req.body.toDate;
   const meter = await Meter.findById(meterId);
-  if(!meter){
-    const error = new Error("couldn't find meter");
-    error.statusCode = 404;
-    throw error
-  }
   try{
+    if(!meter){
+      const error = new Error("couldn't find meter");
+      error.statusCode = 404;
+      throw error
+    }
     if(req.userId === meter.userId.toString()){
       res.status(200).json({
         litersConsumed: meter.litersConsumed.find({ $gte: fromDate, $lte: toDate })
@@ -244,7 +249,12 @@ exports.getConsumption = async (req,res,next) => {
 
 exports.payment = async (req,res,next) => {
   const user = await User.findById(req.userId);
-
+  try{
+    if(!user){
+      const error = new Error("couldn't find user");
+      error.statusCode = 404;
+      throw error
+    }
   const invoiceName = 'invoice-' + req.userId + month[ new Date().getUTCMonth() ] +'.pdf';
   const invoicePath = path.join('data', 'invoices', invoiceName);
   const pdfDoc = new pdfDocument();
@@ -264,77 +274,97 @@ exports.payment = async (req,res,next) => {
   pdfDoc.text('---------------------');
   pdfDoc.fontSize(20).text('Total price: $' + totalPrice);
   pdfDoc.end();
-
+  }
+  catch(err){
+    if(!err.statusCode){
+      err.statusCode = 500;
+    }
+    next(err);
+  }
 }
 
 
 exports.forgetPassword = async (req,res,next) => {
   const user = await User.findOne({ email: req.body.email});
-  if (!user) {
-    const error = new Error("Could not find user");
-    error.statusCode = 404;
-    throw error;
-  }
-  const resetToken = crypto.randomBytes(20).toString('hex');
-  user.resetPasswordToken = resetToken;
-  user.resetPasswordExpires = Date.now() + 3600000;
-  await user.save();
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'oracleowm@gmail.com',
-      pass: 'rhsd wtov blza evqm'
-    },
-  });
-  transporter.sendMail({
-    to: req.body.email,
-    subject: "Password Reset",
-    html: `
-          <p>you requested a password reset.</p>
-          <p>click this <a href="http://localhost:3000/reset/${resetToken}">Link</a> to set a new password.</p>
-        `
-  },(err,response) => {
-    if (err) {
-      return res.status(500).json({ message: 'Error sending email' });
+  try{
+    if (!user) {
+      const error = new Error("Could not find user");
+      error.statusCode = 404;
+      throw error;
     }
-    res.status(200).json({ message: 'Password reset link sent' });
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000;
+    await user.save();
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'oracleowm@gmail.com',
+        pass: 'rhsd wtov blza evqm'
+      },
+    });
+    transporter.sendMail({
+      to: req.body.email,
+      subject: "Password Reset",
+      html: `
+            <p>you requested a password reset.</p>
+            <p>click this <a href="http://localhost:3000/reset/${resetToken}">Link</a> to set a new password.</p>
+          `
+    },(err,response) => {
+      if (err) {
+        return res.status(500).json({ message: 'Error sending email' });
+      }
+      res.status(200).json({ message: 'Password reset link sent' });
+    });
   }
-);
+  catch(err){
+    if(!err.statusCode){
+      err.statusCode = 500;
+    }
+    next(err);
+  }
 }
 
 
 exports.resetPassword = async (req,res,next) => {
   const token = req.body.token;
   const newPassword = req.body.newPassword;
-
-  const user = await User.findOne({
-    resetPasswordToken: token,
-    resetPasswordExpires: { $gt: Date.now() }
-  });
-
-  if (!user) {
-    return res.status(400).json({ message: 'Invalid or expired token' });
+  try{
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+  
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired token' });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+  
+    await user.save();
+  
+    res.status(200).json({ message: 'Password reset successfully' });
   }
-  const hashedPassword = await bcrypt.hash(newPassword, 12);
-  user.password = hashedPassword;
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpires = undefined;
-
-  await user.save();
-
-  res.status(200).json({ message: 'Password reset successfully' });
+  catch(err){
+    if(!err.statusCode){
+      err.statusCode = 500;
+    }
+    next(err);
+  }
 }
 
 
 exports.changePassword = async (req,res,next) => {
   const user = await User.findById(req.userId);
-  if(!user){
-    const error = new Error("Could not find user");
-    error.statusCode = 404;
-    throw error;
-  }
-  const isEqual = await bcrypt.compare(req.body.currentPassword,user.password);
   try{
+    if(!user){
+      const error = new Error("Could not find user");
+      error.statusCode = 404;
+      throw error;
+    }
+    const isEqual = await bcrypt.compare(req.body.currentPassword,user.password);
     if(isEqual){
       const newPassword = req.body.newPassword;
       const newHashedPassword = await bcrypt.hash(newPassword,12);
