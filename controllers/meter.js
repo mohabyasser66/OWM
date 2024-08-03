@@ -64,7 +64,7 @@ exports.litersConsumed = async (req,res,next) => {
         }
         if(meter.liters_consumed.length > 0){
             meter.liters_consumed.push({
-                liters: meter.liters_consumed[meter.litersConsumed.length - 1].liters + Number(litersss),
+                liters: meter.liters_consumed[meter.liters_consumed.length - 1].liters + Number(litersss),
                 timeStamp: Date.now()
             });
         }
