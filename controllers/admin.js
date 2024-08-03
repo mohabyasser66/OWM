@@ -69,6 +69,7 @@ exports.postEditUser = async (req,res,next) => {
         user.phoneNumber = req.body.phoneNumber;
         user.address = req.body.address;
         user.apartmentNumber = req.body.apartmentNumber;
+        user.role = req.body.role;
         const result = await user.save();
         res.status(200).json({
             message:'User Updated',
@@ -190,7 +191,8 @@ exports.addUser = async (req,res,next) => {
             address: req.body.address,
             apartmentNumber: req.body.apartmentNumber,
             age: req.body.age,
-            gender: req.body.gender
+            gender: req.body.gender,
+            role: req.body.role
         });
         const result = await user.save();
         res.status(201).json({message:'User created.', userId: result._id});
