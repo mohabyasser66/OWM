@@ -55,21 +55,21 @@ exports.receiveData = async (req,res,next) => {
 
 exports.litersConsumed = async (req,res,next) => {
     const meter = await Meter.findById(req.body.meterId);
-    if(!meter){
-        const error = new Error("Couldn't find meter.");
-        error.statusCode = 404;
-        throw error;
-    }
     const litersss = req.body.liters;
     try{
-        if(meter.litersConsumed.length > 0){
-            meter.litersConsumed.push({
-                liters: meter.litersConsumed[meter.litersConsumed.length - 1].liters + Number(litersss),
+        if(!meter){
+            const error = new Error("Couldn't find meter.");
+            error.statusCode = 404;
+            throw error;
+        }
+        if(meter.liters_consumed.length > 0){
+            meter.liters_consumed.push({
+                liters: meter.liters_consumed[meter.litersConsumed.length - 1].liters + Number(litersss),
                 timeStamp: Date.now()
             });
         }
         else{
-            meter.litersConsumed.push({
+            meter.liters_consumed.push({
                 liters: Number(litersss),
                 timeStamp: Date.now()
             });
