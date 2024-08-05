@@ -7,33 +7,22 @@ const meterScehma = new Schema({
         enum: ["open","closed"],
         default: "open"
     },
-    // leakage:{
-    //     type: String,
-    //     enum: ['true','false'],
-    //     default: 'false'
-    // },
-    liters_consumed:[{
-        liters:{
-            type: Number,
-            default: 0
-        },
-        timeStamp:{
-            type: Date,
-            required: true
-        }
-    }],
-    data:[{
-        flow_rate:{
-            type: Number
-        },
-        pressure_rate:{
-            type: Number
-        },
-        timeStamp: {
-            type: Date,
-            required: true
-        }
-    }],
+    name:{
+        type: String
+    },
+    token: {
+        type: String
+    },
+    start_read:{
+        type: String,
+        enum: ["true", "false"],
+        default: "true"
+    },
+    connection_status:{
+        type: String,
+        enum: ["Connected", "Disconnected"],
+        default: "Connected"
+    },
     userId:{
         type: Schema.Types.ObjectId,
         ref: 'User'
@@ -43,7 +32,7 @@ const meterScehma = new Schema({
             type: Number,
             required: true
         },
-        timeStamp:{
+        created_at:{
             type: Date,
             required: true
         }

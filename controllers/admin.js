@@ -124,7 +124,9 @@ exports.addMeter = async (req,res,next) => {
         await user.save();
         const meter = new Meter({
           userId : userId,
-          _id : meterId
+          _id : meterId,
+          token: meterId,
+          name: req.body.name
         });
         await meter.save();
         res.status(200).json({

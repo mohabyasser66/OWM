@@ -25,7 +25,7 @@ router.post('/user/edit-user', isAuth,
 
 router.post("/user/add-meter", isAuth, userController.userAddMeter);
 
-router.post("/user/get-liters", isAuth, userController.getLitersConsumed);
+// router.post("/user/get-liters", isAuth, userController.getLitersConsumed);
 
 router.post("/user/get-money", isAuth, userController.getMeterMoney);
 
@@ -39,5 +39,8 @@ router.post("/user/reset-password", isAuth, userController.resetPassword);
 
 router.post("/user/change-password", isAuth, userController.changePassword);
 
+router.get("/user/get-all-data", isAuth, userController.getAllMetersData);
+
+router.post("/user/change-power", isAuth, userController.changePowerStatus);
 
 module.exports = router;

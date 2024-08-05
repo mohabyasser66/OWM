@@ -61,7 +61,6 @@ exports.login = async (req,res,next) => {
             throw error;
         }
         const token = jwt.sign({
-            email:loadedUser.email,
             userId: loadedUser._id.toString()
         },
         'somesupersecretsecret',
@@ -69,6 +68,7 @@ exports.login = async (req,res,next) => {
         );
         res.status(200).json({ 
             message: "Logged In Successfully", 
+            status: "200",
             user:{
                 id: loadedUser._id.toString(),
                 username: loadedUser.userName,
@@ -80,7 +80,7 @@ exports.login = async (req,res,next) => {
                 token_data:{
                     access_token: token,
                     token_type: "jwt",
-                    expires_in: String( Date.now() + 7200000 )
+                    expires_in: new Date( Date.now() + 7200000 ).toLocaleTimeString() 
                 }
             }
         });

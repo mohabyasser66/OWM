@@ -9,7 +9,7 @@ router.post("/meter/leakage-detected", meterController.leakageDetected);
 
 router.post("/meter/receive-sensor-data", meterController.receiveData);
 
-router.post("/meter/liters-consumed", meterController.litersConsumed);
+// router.post("/meter/liters-consumed", meterController.litersConsumed);
 
 
 

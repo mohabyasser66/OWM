@@ -3,6 +3,7 @@ const fs = require('fs');
 
 const User = require('../models/user');
 const Meter = require('../models/meter');
+const Data = require("../models/data");
 const mongoose = require('mongoose');
 const bcrypt = require("bcryptjs");
 const pdfDocument = require("pdfkit");
@@ -32,7 +33,8 @@ exports.getUserData = async (req,res,next) => {
         address: user.address,
         apartmentNumber: user.apartmentNumber,
         gender: user.gender,
-        age: user.age
+        age: user.age,
+        meters: user.meters
       });
     }
     else{
@@ -55,20 +57,30 @@ exports.getUserData = async (req,res,next) => {
 exports.getMeterData = async (req,res,next) => {
   const meterId = req.body.meterId;
   const meter = await Meter.findById(meterId);
+  const data = await Data.find({ device_id: meterId });
   try{
     if(!meter){
       const error = new Error("couldn't find meter");
       error.statusCode = 404;
       throw error
     }
+    if(!data){
+      const error = new Error("couldn't find any data to this meter");
+      error.statusCode = 404;
+      throw error
+    }
     if(req.userId === meter.userId.toString()){
       res.status(200).json({
         message: "Meter Data Fetched Successfully",
+        status: "200",
         IoTDevice: {
-          id: meter._id,
+          id: meter._id.toString(),
+          name: meter.name,
+          token: meter.token,
           flow_status: meter.valveStatus,
-          connection_status: "Connected",
-          readings: meter.data
+          start_read: meter.start_read,
+          connection_status: meter.connection_status,
+          readings: data
         }
       });
     }
@@ -77,6 +89,44 @@ exports.getMeterData = async (req,res,next) => {
         message: 'Unauthorized, Not Your Meter'
       });
     }
+  }
+  catch(err){
+    if(!err.statusCode){
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+}
+
+
+exports.getAllMetersData = async (req,res,next) => {
+  let IoTDevices = [];
+  let meterAndData = {};
+  try{
+    const user = await User.findById(req.userId);
+    if(!user){
+      const error = new Error("Couldn't find user.")
+      error.statusCode = 404;
+      throw error;
+    }
+    for(let i = 0; i < user.meters.length; i++){
+      let meters = await Meter.findById(user.meters[i]);
+      let meterData = await Data.find({ device_id: meters._id});
+      meterAndData = {
+        id:meters._id, 
+        name:meters.name, 
+        token:meters.token, 
+        start_read:meters.start_read, 
+        connection_status:meters.connection_status, 
+        readings:meterData
+      };
+      IoTDevices.push(meterAndData);
+    }
+    res.status(200).json({ 
+      status: "200",
+      message: "All Data Fetched Successfully.",
+      IoTDevices: IoTDevices
+    });
   }
   catch(err){
     if(!err.statusCode){
@@ -157,33 +207,33 @@ exports.userAddMeter = async (req,res,next) => {
 
 
 
-exports.getLitersConsumed = async (req,res,next) => {
-  const meterId = req.body.meterId;
-  const meter = await Meter.findById(meterId);
-  try{
-    if(!meter){
-      const error = new Error("couldn't find meter");
-      error.statusCode = 404;
-      throw error
-    }
-    if(req.userId === meter.userId.toString()){
-      res.status(200).json({
-        liters: meter.litersConsumed
-      });
-    }
-    else{
-      res.status(401).json({
-        message: 'Unauthorized, Not Your Meter'
-      });
-    }
-  }
-  catch(err){
-    if(!err.statusCode){
-      err.statusCode = 500;
-    }
-    next(err);
-  }
-}
+// exports.getLitersConsumed = async (req,res,next) => {
+//   const meterId = req.body.meterId;
+//   const meter = await Meter.findById(meterId);
+//   try{
+//     if(!meter){
+//       const error = new Error("couldn't find meter");
+//       error.statusCode = 404;
+//       throw error
+//     }
+//     if(req.userId === meter.userId.toString()){
+//       res.status(200).json({
+//         liters: meter.litersConsumed
+//       });
+//     }
+//     else{
+//       res.status(401).json({
+//         message: 'Unauthorized, Not Your Meter'
+//       });
+//     }
+//   }
+//   catch(err){
+//     if(!err.statusCode){
+//       err.statusCode = 500;
+//     }
+//     next(err);
+//   }
+// }
 
 
 exports.getMeterMoney = async (req,res,next) => {
@@ -387,4 +437,12 @@ exports.changePassword = async (req,res,next) => {
     next(err);
   } 
   
+}
+
+exports.changePowerStatus = async (req,res,next) => {
+  const meterId = req.body.meterId;
+  res.status(200).json({
+    status: "200",
+    message: "Power Status Changed"
+  })
 }
