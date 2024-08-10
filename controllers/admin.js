@@ -70,6 +70,7 @@ exports.postEditUser = async (req,res,next) => {
         user.address = req.body.address;
         user.apartmentNumber = req.body.apartmentNumber;
         user.role = req.body.role;
+        user.age = req.body.age;
         const result = await user.save();
         res.status(200).json({
             message:'User Updated',
