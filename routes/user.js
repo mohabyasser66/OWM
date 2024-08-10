@@ -19,7 +19,8 @@ router.post('/user/edit-user', isAuth,
     body("phoneNumber", "Please enter your phone number").isNumeric().not().isEmpty(),
     body('address').trim().not().isEmpty(),
     body('apartmentNumber').isAlphanumeric().trim().not().isEmpty(),
-    body('email').isEmail().withMessage('please enter a valid email.')
+    body('email').isEmail().withMessage('please enter a valid email.'),
+    body('age').isNumeric()
 ] 
 , userController.postEditUser);
 

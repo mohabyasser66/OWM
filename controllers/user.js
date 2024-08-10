@@ -161,6 +161,7 @@ exports.postEditUser = async (req,res,next) => {
     user.phoneNumber = req.body.phoneNumber;
     user.address = req.body.address;
     user.apartmentNumber = req.body.apartmentNumber;
+    user.age = req.body.age;
     const result = await user.save();
     res.status(200).json({
         message:'User Updated',
