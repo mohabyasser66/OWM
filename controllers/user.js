@@ -248,7 +248,8 @@ exports.getMeterMoney = async (req,res,next) => {
     }
     if(req.userId === meter.userId.toString()){
       res.status(200).json({
-        money: meter.money
+        Balance: meter.balance,
+        Money: meter.money
       });
     }
     else{
@@ -300,12 +301,18 @@ exports.getConsumption = async (req,res,next) => {
 
 exports.payment = async (req,res,next) => {
   const user = await User.findById(req.userId);
+  const meter = await Meter.findById(req.body.meterId);
   try{
-    if(!user){
-      const error = new Error("couldn't find user");
-      error.statusCode = 404;
-      throw error
-    }
+  if(!user){
+    const error = new Error("couldn't find user");
+    error.statusCode = 404;
+    throw error
+  }
+  if(!meter){
+    const error = new Error("couldn't find meter");
+    error.statusCode = 404;
+    throw error
+  }
   const invoiceName = 'invoice-' + req.userId + month[ new Date().getUTCMonth() ] +'.pdf';
   const invoicePath = path.join('data', 'invoices', invoiceName);
   const pdfDoc = new pdfDocument();
@@ -317,7 +324,7 @@ exports.payment = async (req,res,next) => {
     underline:true
   });
   pdfDoc.text('----------------------------------------');
-  let totalPrice = 100;
+  let totalPrice = meter.balance;
   pdfDoc.text('invoice for: '+ user.firstName + ' ' + user.lastName)
 
 

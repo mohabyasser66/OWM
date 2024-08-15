@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const meterScehma = new Schema({
+const meterSchema = new Schema({
     valveStatus:{
         type: String,
         enum: ["open","closed"],
@@ -27,18 +27,47 @@ const meterScehma = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'User'
     },
+    balance:{
+        type: Number,
+        required: true,
+        default: 0,
+        min: 0
+    },
     money:[{
         amount:{
             type: Number,
-            required: true
+            required: true,
+            min: 0
         },
         created_at:{
             type: Date,
-            required: true
+            default: Date.now()
         }
-    }]
+    }],
+    lastUpdated: {
+        type: Date,
+        default: Date.now()
+    }
 })
 
 
 
-module.exports = mongoose.model('Meter', meterScehma);
+meterSchema.methods.updateBalance = function(amount) {
+    if (amount < 0) {
+        throw new Error('Amount must be positive');
+    }
+    this.balance += amount;
+    this.money.push({ amount:amount });
+    this.lastUpdated = Date.now();
+    return this.save();
+};
+
+meterSchema.methods.resetMonthlyBalance = function() {
+    this.balance = 0;
+    this.money = [];
+    this.lastUpdated = Date.now();
+    return this.save();
+};
+
+
+module.exports = mongoose.model('Meter', meterSchema);
