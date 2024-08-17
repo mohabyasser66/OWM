@@ -181,10 +181,16 @@ exports.postEditUser = async (req,res,next) => {
 exports.userAddMeter = async (req,res,next) => {
   const meterId = req.body.meterId;
   const user = await User.findById(req.userId);
+  const existentMeter = Meter.findById(meterId);
   try{
     if(!user){
       const error = new Error("Could not find user");
       error.statusCode = 404;
+      throw error;
+    }
+    else if(existentMeter){
+      const error = new Error("A meter with this ID already exist.");
+      error.statusCode = 409;
       throw error;
     }
     user.meters.push(meterId);

@@ -1,5 +1,6 @@
 const User = require('../models/user');
 const Meter = require('../models/meter');
+const Data = require("../models/data");
 
 const {validationResult} = require('express-validator');
 const bcrypt = require('bcryptjs');
@@ -115,10 +116,16 @@ exports.addMeter = async (req,res,next) => {
     const meterId = req.body.meterId;
     const userId = req.body.userId;
     const user = await User.findById(userId);
+    const existentMeter = Meter.findById(meterId);
     try{
         if(!user){
             const error = new Error("Could not find user");
             error.statusCode = 404;
+            throw error;
+        }
+        else if(existentMeter){
+            const error = new Error("A meter with this ID already exist.");
+            error.statusCode = 409;
             throw error;
         }
         user.meters.push(meterId);
@@ -162,6 +169,7 @@ exports.deleteMeter = async (req,res,next) => {
         user.meters.splice(meterIndex,1);
         await user.save();
         await Meter.findByIdAndDelete(meterId);
+        await Data.deleteMany({device_id: meterId});
         res.status(201).json({ message: "Meter Deleted Successfully."});
     }
     catch(err){
