@@ -187,11 +187,13 @@ exports.userAddMeter = async (req,res,next) => {
       error.statusCode = 404;
       throw error;
     }
-    user.meters.push(new mongoose.Types.ObjectId(meterId));
+    user.meters.push(meterId);
     await user.save();
     const meter = new Meter({
+      _id : meterId,
       userId : req.userId,
-      _id :new mongoose.Types.ObjectId(meterId)
+      token: meterId,
+      name: user.userName + " Meter"
     });
     await meter.save();
     res.status(200).json({
@@ -449,8 +451,49 @@ exports.changePassword = async (req,res,next) => {
 
 exports.changePowerStatus = async (req,res,next) => {
   const meterId = req.body.meterId;
-  res.status(200).json({
-    status: "200",
-    message: "Power Status Changed"
-  })
+  const meter = await Meter.findById(meterId);
+  try{
+    if(!meter){
+      const error = new Error("Could not find meter");
+      error.statusCode = 404;
+      throw error;
+    }
+    if(req.userId !== meter.userId.toString()){
+      const error = new Error("Not Authorized, Not Your Meter");
+      error.statusCode = 401;
+      throw error;
+    }
+    if(meter.connection_status == "Connected"){
+      meter.connection_status = "Disconnected";
+      meter.start_read = "false";
+      await meter.save();
+      res.status(200).json({
+        status: "200",
+        power_status: meter.connection_status,
+        start_read: meter.start_read
+      });
+    }
+    else if(meter.connection_status == "Disconnected"){
+      meter.connection_status = "Connected";
+      meter.start_read = "true";
+      await meter.save();
+      res.status(200).json({
+        status: "200",
+        powerStatus: meter.connection_status,
+        start_read: meter.start_read
+      });
+    }
+    else{
+      const error = new Error("This meter power status is malformed");
+      error.statusCode = 404;
+      throw error;
+    }
+  }
+  catch(err){
+    if(!err.statusCode){
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+  
 }

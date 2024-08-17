@@ -14,8 +14,8 @@ exports.getUsers = async(req,res,next) => {
             throw error;
         }
         res.status(200).json({
-            users:users,
-            message:'users fetched successfully'
+            message:'users fetched successfully',
+            users:users
         });
     }  
     catch(err) {
@@ -37,7 +37,7 @@ exports.getEditUser = async (req,res,next) => {
             throw error;
         }
         res.status(200).json({
-            message:'User Fetched',
+            message:'User Fetched Successfully',
             user: user
         });
     }
@@ -124,10 +124,10 @@ exports.addMeter = async (req,res,next) => {
         user.meters.push(meterId);
         await user.save();
         const meter = new Meter({
+            _id : meterId,
           userId : userId,
-          _id : meterId,
           token: meterId,
-          name: req.body.name
+          name: user.userName + " Meter"
         });
         await meter.save();
         res.status(200).json({

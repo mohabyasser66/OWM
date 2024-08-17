@@ -80,7 +80,7 @@ exports.login = async (req,res,next) => {
                 token_data:{
                     access_token: token,
                     token_type: "jwt",
-                    expires_in: new Date( Date.now() + 7200000 ).toLocaleTimeString() 
+                    expires_in: new Date( Date.now() + 18000000 ).toLocaleTimeString()   // 7200000 = 2 hours  
                 }
             }
         });
