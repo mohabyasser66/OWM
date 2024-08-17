@@ -181,7 +181,7 @@ exports.postEditUser = async (req,res,next) => {
 exports.userAddMeter = async (req,res,next) => {
   const meterId = req.body.meterId;
   const user = await User.findById(req.userId);
-  const existentMeter = Meter.findById(meterId);
+  const existentMeter = await Meter.findById(meterId);
   try{
     if(!user){
       const error = new Error("Could not find user");

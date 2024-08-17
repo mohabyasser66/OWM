@@ -116,14 +116,14 @@ exports.addMeter = async (req,res,next) => {
     const meterId = req.body.meterId;
     const userId = req.body.userId;
     const user = await User.findById(userId);
-    const existentMeter = Meter.findById(meterId);
+    const existentMeter = await Meter.findById(meterId);
     try{
         if(!user){
             const error = new Error("Could not find user");
             error.statusCode = 404;
             throw error;
         }
-        else if(existentMeter){
+        if(existentMeter){
             const error = new Error("A meter with this ID already exist.");
             error.statusCode = 409;
             throw error;
