@@ -277,18 +277,30 @@ exports.getMeterMoney = async (req,res,next) => {
 
 exports.getConsumption = async (req,res,next) => {
   const meterId = req.body.meterId;
-  const fromDate = req.body.fromDate;
-  const toDate = req.body.toDate;
+  const fromDate = new Date(req.body.fromDate);
+  const toDate = new Date(req.body.toDate);
   const meter = await Meter.findById(meterId);
   try{
     if(!meter){
-      const error = new Error("couldn't find meter");
+      const error = new Error("Couldn't find meter");
+      error.statusCode = 404;
+      throw error
+    }
+    if (!fromDate || !toDate || fromDate > toDate) {
+      const error = new Error('Invalid date range');
       error.statusCode = 404;
       throw error
     }
     if(req.userId === meter.userId.toString()){
+      const meterRecords = await Data.find({
+        device_id: meterId,
+        created_at: {
+          $gte: fromDate,
+          $lte: toDate
+        }
+      }).select("liters_consumed created_at -_id");
       res.status(200).json({
-        litersConsumed: meter.litersConsumed.find({ $gte: fromDate, $lte: toDate })
+        litersConsumed: meterRecords
       });
     }
     else{
