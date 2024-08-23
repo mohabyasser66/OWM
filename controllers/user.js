@@ -4,7 +4,6 @@ const fs = require('fs');
 const User = require('../models/user');
 const Meter = require('../models/meter');
 const Data = require("../models/data");
-const mongoose = require('mongoose');
 const bcrypt = require("bcryptjs");
 const pdfDocument = require("pdfkit");
 const crypto = require('crypto');
@@ -57,7 +56,7 @@ exports.getUserData = async (req,res,next) => {
 exports.getMeterData = async (req,res,next) => {
   const meterId = req.body.meterId;
   const meter = await Meter.findById(meterId);
-  const data = await Data.find({ device_id: meterId });
+  const data = await Data.find({ device_id: meterId }).select("liters_consumed flow_rate pressure_rate created_at -_id");
   try{
     if(!meter){
       const error = new Error("couldn't find meter");
@@ -111,7 +110,7 @@ exports.getAllMetersData = async (req,res,next) => {
     }
     for(let i = 0; i < user.meters.length; i++){
       let meters = await Meter.findById(user.meters[i]);
-      let meterData = await Data.find({ device_id: meters._id});
+      let meterData = await Data.find({ device_id: meters._id}).select("liters_consumed flow_rate pressure_rate created_at -_id");
       meterAndData = {
         id:meters._id, 
         name:meters.name, 
@@ -215,39 +214,9 @@ exports.userAddMeter = async (req,res,next) => {
 }
 
 
-
-// exports.getLitersConsumed = async (req,res,next) => {
-//   const meterId = req.body.meterId;
-//   const meter = await Meter.findById(meterId);
-//   try{
-//     if(!meter){
-//       const error = new Error("couldn't find meter");
-//       error.statusCode = 404;
-//       throw error
-//     }
-//     if(req.userId === meter.userId.toString()){
-//       res.status(200).json({
-//         liters: meter.litersConsumed
-//       });
-//     }
-//     else{
-//       res.status(401).json({
-//         message: 'Unauthorized, Not Your Meter'
-//       });
-//     }
-//   }
-//   catch(err){
-//     if(!err.statusCode){
-//       err.statusCode = 500;
-//     }
-//     next(err);
-//   }
-// }
-
-
 exports.getMeterMoney = async (req,res,next) => {
   const meterId = req.body.meterId;
-  const meter = await Meter.findById(meterId);
+  const meter = await Meter.findById(meterId).select("balance money.amount money.created_at userId");
   try{
     if(!meter){
       const error = new Error("couldn't find meter");
@@ -321,37 +290,25 @@ exports.getConsumption = async (req,res,next) => {
 
 exports.payment = async (req,res,next) => {
   const user = await User.findById(req.userId);
-  const meter = await Meter.findById(req.body.meterId);
+  let totalBalance = 0;
   try{
   if(!user){
     const error = new Error("couldn't find user");
     error.statusCode = 404;
     throw error
   }
-  if(!meter){
-    const error = new Error("couldn't find meter");
-    error.statusCode = 404;
-    throw error
-  }
-  const invoiceName = 'invoice-' + req.userId + month[ new Date().getUTCMonth() ] +'.pdf';
-  const invoicePath = path.join('data', 'invoices', invoiceName);
-  const pdfDoc = new pdfDocument();
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', 'inline; filename="' +invoiceName+ '" ');
-  pdfDoc.pipe(fs.createWriteStream(invoicePath));
-  pdfDoc.pipe(res);
-  pdfDoc.fontSize(26).text('Invoice', {
-    underline:true
+  for(let id of user.meters) {
+    let meter = await Meter.findById(id);
+    if(!meter){
+      const error = new Error("couldn't find meter");
+      error.statusCode = 404;
+      throw error
+    }
+    totalBalance += meter.balance;
+  };
+  res.status(200).json({
+    totalBalance: totalBalance
   });
-  pdfDoc.text('----------------------------------------');
-  let totalPrice = meter.balance;
-  pdfDoc.text('invoice for: '+ user.firstName + ' ' + user.lastName)
-
-
-
-  pdfDoc.text('---------------------');
-  pdfDoc.fontSize(20).text('Total price: $' + totalPrice);
-  pdfDoc.end();
   }
   catch(err){
     if(!err.statusCode){

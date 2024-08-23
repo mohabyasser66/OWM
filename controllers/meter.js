@@ -56,45 +56,10 @@ exports.receiveData = async (req,res,next) => {
     }
 }
 
-// exports.litersConsumed = async (req,res,next) => {
-//     const meter = await Meter.findById(req.body.meterId);
-//     const litersss = req.body.liters;
-//     try{
-//         if(!meter){
-//             const error = new Error("Couldn't find meter.");
-//             error.statusCode = 404;
-//             throw error;
-//         }
-//         if(meter.liters_consumed.length > 0){
-//             meter.liters_consumed.push({
-//                 liters: meter.liters_consumed[meter.liters_consumed.length - 1].liters + Number(litersss),
-//                 timeStamp: Date.now()
-//             });
-//         }
-//         else{
-//             meter.liters_consumed.push({
-//                 liters: Number(litersss),
-//                 timeStamp: Date.now()
-//             });
-//         }
-//         await meter.save();
-//         res.status(200).json({
-//             "message" : "Liters Stored Successfully."
-//         })
-//     }
-//     catch(err){
-//         if(!err.statusCode){
-//             err.statusCode = 500;
-//         }
-//         next(err);
-//     }
-    
-// }
-
 
 exports.addMoneyToMeter = async (req,res,next) => {
     const meter = await Meter.findById(req.body.meterId);
-    const money = req.body.money;
+    const money = Number(req.body.money);
     try{
         if(!meter){
             const error = new Error("Couldn't find meter.");
@@ -104,7 +69,7 @@ exports.addMoneyToMeter = async (req,res,next) => {
         await meter.updateBalance(money);
         res.status(200).json({
             "Message": "Money Updated",
-            "Money": meter.balance
+            "Balance": meter.balance
         });
     }
     catch(err){

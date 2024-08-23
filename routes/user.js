@@ -26,13 +26,11 @@ router.post('/user/edit-user', isAuth,
 
 router.post("/user/add-meter", isAuth, userController.userAddMeter);
 
-// router.post("/user/get-liters", isAuth, userController.getLitersConsumed);
-
 router.post("/user/get-money", isAuth, userController.getMeterMoney);
 
 router.post("/user/get-water-consumption", isAuth, userController.getConsumption);
 
-router.post("/user/payment", isAuth, userController.payment);
+router.get("/user/payment", isAuth, userController.payment);
 
 router.post("/user/forget-password", isAuth, userController.forgetPassword);
 

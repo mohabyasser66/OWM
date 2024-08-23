@@ -13,7 +13,5 @@ router.post("/meter/add-money", meterController.addMoneyToMeter);
 
 router.post("/meter/reset-meter", meterController.resetMeterAtMonthEnd);
 
-// router.post("/meter/liters-consumed", meterController.litersConsumed);
-
 
 module.exports = router;
