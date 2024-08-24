@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const express = require("express");
-const mqtt = require('mqtt');
 
 require("dotenv").config();
 
@@ -11,9 +10,6 @@ const userRoutes = require("./routes/user");
 const meterRoutes = require("./routes/meter");
 
 const app = express();
-
-const brokerUrl = "mqtt://localhost";
-// const topics = ["leakage-detection", "motor-control-valve"];
 
 app.use(bodyParser.json());
 
@@ -31,15 +27,6 @@ app.use(authRoutes);
 app.use(adminRoutes);
 app.use(userRoutes);
 app.use(meterRoutes);
-
-// const client = mqtt.connect(brokerUrl);
-// client.on('connect', () => {
-//   console.log('Connected to MQTT broker');
-// });
-
-// client.on('error', (error) => {
-//   console.error('Error:', error);
-// });
 
 app.use( (err,req,res,next) => {
   console.log(err);

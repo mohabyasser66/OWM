@@ -1,22 +1,39 @@
 const User = require('../models/user');
 const Meter = require('../models/meter');
 const Data = require('../models/data');
-// const mqtt = require('mqtt');
-// const client = mqtt.connect(brokerUrl);
+const mqtt = require('mqtt');
+
+
+const client = mqtt.connect("mqtt://localhost");
+client.on('connect', () => {
+    console.log('Connected to MQTT broker');
+});
+  
+client.on('error', (error) => {
+console.error('Error:', error);
+});
 
 
 exports.leakageDetected = async (req,res,next) => {
     const meterId = req.body.meterId;
+    const userId = req.body.userId;
     const meter = await Meter.findById(meterId);
+    const user = await User.findById(userId);
     try{
-        if(!meter){
-            const error = new Error("Couldn't find meter.");
+        if(!meter || !user){
+            const error = new Error("Couldn't find meter or its owner.");
             error.statusCode = 404;
             throw error;
         }
-        // client.publish(`${req.userId}`, 'Your meter detected a leakage');
-        meter.leakage = 'true';
-        await meter.save();
+        client.publish(`${userId}`, "Leakage Detected on Your Meter", (err) => {
+            if (err) {
+                console.error('Failed to publish MQTT message:', err);
+                return res.status(500).json({ error: 'Failed to send notification' });
+            }
+    
+            console.log(`Published leakage notification for user: ${user.firstName} ${user.lastName}, with ID: ${userId}`);
+            res.status(200).json({ message: 'Notification sent successfully' });
+        });
     }
     catch(err){
         if(!err.statusCode){
