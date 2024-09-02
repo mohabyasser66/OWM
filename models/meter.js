@@ -47,6 +47,9 @@ const meterSchema = new Schema({
     lastUpdated: {
         type: Date,
         default: Date.now()
+    },
+    MACAddress: {
+        type: String
     }
 })
 

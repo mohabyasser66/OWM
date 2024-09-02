@@ -13,5 +13,6 @@ router.post("/meter/add-money", meterController.addMoneyToMeter);
 
 router.post("/meter/reset-meter", meterController.resetMeterAtMonthEnd);
 
+router.post("/meter/check-mac", meterController.checkMAC);
 
 module.exports = router;

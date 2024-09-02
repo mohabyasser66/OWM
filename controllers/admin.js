@@ -115,6 +115,7 @@ exports.deleteUser = async (req,res,next) => {
 exports.addMeter = async (req,res,next) => {
     const meterId = req.body.meterId;
     const userId = req.body.userId;
+    const mac = req.body.mac;
     const user = await User.findById(userId);
     const existentMeter = await Meter.findById(meterId);
     try{
@@ -134,7 +135,8 @@ exports.addMeter = async (req,res,next) => {
             _id : meterId,
           userId : userId,
           token: meterId,
-          name: user.userName + " Meter"
+          name: user.userName + " Meter",
+          MACAddress: mac
         });
         await meter.save();
         res.status(200).json({

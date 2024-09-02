@@ -117,3 +117,25 @@ exports.resetMeterAtMonthEnd = async (req,res,next) =>{
         next(err);
     }
 }
+
+
+exports.checkMAC = async (req,res,next) => {
+    const mac = req.body.mac;
+    const meter = await Meter.find({ MACAddress: mac });
+    try{
+        if(!meter){
+            const error = new Error("Couldn't find meter.");
+            error.statusCode = 404;
+            throw error;
+        }
+        res.status(200).json({
+            "userId": meter.userId,
+            "meterId": meter._id
+        });
+    }catch(err){
+        if(!err.statusCode){
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+}
