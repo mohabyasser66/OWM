@@ -113,32 +113,32 @@ exports.deleteUser = async (req,res,next) => {
 
 
 exports.addMeter = async (req,res,next) => {
-    const meterId = req.body.meterId;
     const userId = req.body.userId;
     const mac = req.body.mac;
     const user = await User.findById(userId);
-    const existentMeter = await Meter.findById(meterId);
     try{
         if(!user){
             const error = new Error("Could not find user");
             error.statusCode = 404;
             throw error;
         }
-        if(existentMeter){
-            const error = new Error("A meter with this ID already exist.");
-            error.statusCode = 409;
-            throw error;
-        }
-        user.meters.push(meterId);
-        await user.save();
         const meter = new Meter({
-            _id : meterId,
           userId : userId,
-          token: meterId,
+          token: userId,
           name: user.userName + " Meter",
           MACAddress: mac
         });
         await meter.save();
+        const newMeter = await Meter.find({ userId: userId, token: userId, MACAddress: mac});
+        if(!newMeter){
+            const error = new Error("Could not find the new meter");
+            error.statusCode = 404;
+            throw error;
+        }
+        console.log(newMeter);
+        
+        user.meters.push(newMeter[0]._id);
+        await user.save();
         res.status(200).json({
           message: "Meter Added Successfully."
         });
