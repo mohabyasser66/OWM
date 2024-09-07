@@ -23,10 +23,10 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(authRoutes);
-app.use(adminRoutes);
-app.use(userRoutes);
-app.use(meterRoutes);
+app.use('/backend',authRoutes);
+app.use('/backend',adminRoutes);
+app.use('/backend',userRoutes);
+app.use('/backend',meterRoutes);
 
 app.use( (err,req,res,next) => {
   console.log(err);
