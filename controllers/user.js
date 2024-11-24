@@ -5,12 +5,30 @@ const User = require('../models/user');
 const Meter = require('../models/meter');
 const Data = require("../models/data");
 const bcrypt = require("bcryptjs");
-const pdfDocument = require("pdfkit");
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-
 const { validationResult } = require('express-validator');
+
 const month = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const tierRates = [
+  { limit: 30, rate: 2.5 },
+  { limit: 50, rate: 3.0 },
+  { limit: Infinity, rate: 3.5 }
+];
+
+const calculateWaterBill = (consumption) => {
+  let total = 0;
+  let remainingConsumption = consumption;
+  for (const tier of tierRates) {
+    if (remainingConsumption > 0) {
+      const applicableConsumption = Math.min(remainingConsumption, tier.limit);
+      total += applicableConsumption * tier.rate;
+      remainingConsumption -= applicableConsumption;
+    }
+  }
+  return total.toFixed(2);
+};
+
 
 
 exports.getUserData = async (req,res,next) => {
@@ -343,7 +361,7 @@ exports.forgetPassword = async (req,res,next) => {
       subject: "Password Reset",
       html: `
             <p>you requested a password reset.</p>
-            <p>click this <a href="http://localhost:3000/reset/${resetToken}">Link</a> to set a new password.</p>
+            <p>click this <a href="https://owmmeter.com/new-password/${resetToken}">Link</a> to set a new password.</p>
           `
     },(err,response) => {
       if (err) {
@@ -472,3 +490,20 @@ exports.changePowerStatus = async (req,res,next) => {
   }
   
 }
+
+
+exports.calculateBill = async (req,res) => {
+  let total = 0.00;
+  const user = await User.findById(req.userId);
+  const userMeters = user.meters.map(async (meter) => {
+    let singlemeter = await Data.find({device_id: meter.toString(), created_at: Date.month()}).select("liters_consumed");
+    console.log(singlemeter);
+  })
+}
+
+
+
+
+
+// user -> his meters -> search for each meter consumption over the month -> calculate meter bill in that month
+// -> return the bill of that meter and go to his next meter

@@ -32,14 +32,16 @@ router.post("/user/get-water-consumption", isAuth, userController.getConsumption
 
 router.get("/user/payment", isAuth, userController.payment);
 
-router.post("/user/forget-password", isAuth, userController.forgetPassword);
+router.post("/user/forget-password", userController.forgetPassword);
 
-router.post("/user/reset-password", isAuth, userController.resetPassword);
+router.post("/user/reset-password", userController.resetPassword);
 
 router.post("/user/change-password", isAuth, userController.changePassword);
 
 router.get("/user/get-all-data", isAuth, userController.getAllMetersData);
 
 router.post("/user/change-power", isAuth, userController.changePowerStatus);
+
+router.post("/user/calculate-bill", isAuth, userController.calculateBill);
 
 module.exports = router;

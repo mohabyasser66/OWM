@@ -27,23 +27,6 @@ const meterSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'User'
     },
-    balance:{
-        type: Number,
-        required: true,
-        default: 0,
-        min: 0
-    },
-    money:[{
-        amount:{
-            type: Number,
-            required: true,
-            min: 0
-        },
-        created_at:{
-            type: Date,
-            default: Date.now()
-        }
-    }],
     lastUpdated: {
         type: Date,
         default: Date.now()
@@ -52,25 +35,6 @@ const meterSchema = new Schema({
         type: String
     }
 })
-
-
-
-meterSchema.methods.updateBalance = function(amount) {
-    if (amount < 0) {
-        throw new Error('Amount must be positive');
-    }
-    this.balance += amount;
-    this.money.push({ amount:amount });
-    this.lastUpdated = Date.now();
-    return this.save();
-};
-
-meterSchema.methods.resetMonthlyBalance = function() {
-    this.balance = 0;
-    this.money = [];
-    this.lastUpdated = Date.now();
-    return this.save();
-};
 
 
 module.exports = mongoose.model('Meter', meterSchema);
