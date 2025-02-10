@@ -13,6 +13,22 @@ client.on('error', (error) => {
 console.error('Error:', error);
 });
 
+async function connectAll() {
+    let usersIds = [];
+    const users = await User.find();
+    users.forEach(user => {
+        usersIds.push(user._id.toString());
+    });
+    client.subscribe(usersIds);
+    console.log(usersIds);
+}
+
+connectAll();
+
+
+client.on('message', (message) => {
+    console.log(message);
+})
 
 exports.leakageDetected = async (req,res,next) => {
     const meterId = req.body.meterId;

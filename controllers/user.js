@@ -501,9 +501,8 @@ exports.calculateBill = async (req,res) => {
   })
 }
 
-
-
-
-
 // user -> his meters -> search for each meter consumption over the month -> calculate meter bill in that month
 // -> return the bill of that meter and go to his next meter
+
+
+
