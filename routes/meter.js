@@ -7,6 +7,8 @@ const meterController = require("../controllers/meter");
 
 router.post("/meter/leakage-detected", meterController.leakageDetected);
 
+router.post("/meter/valve-status", meterController.toggleValve);
+
 router.post("/meter/receive-sensor-data", meterController.receiveData);
 
 // router.post("/meter/add-money", meterController.addMoneyToMeter);

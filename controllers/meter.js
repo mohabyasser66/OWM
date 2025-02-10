@@ -20,14 +20,13 @@ async function connectAll() {
         usersIds.push(user._id.toString());
     });
     client.subscribe(usersIds);
-    console.log(usersIds);
 }
 
 connectAll();
 
 
 client.on('message', (topic, message) => {
-    console.log(message);
+    console.log(message.toString());
 })
 
 exports.leakageDetected = async (req,res,next) => {
@@ -59,6 +58,40 @@ exports.leakageDetected = async (req,res,next) => {
     }
 }
 
+
+exports.toggleValve = async (req,res, next) => {
+    const meterId = req.body.meterId;
+    const userId = req.body.userId;
+    const meter = await Meter.findById(meterId);
+    const user = await User.findById(userId);
+    try {
+        if(!meter || !user){
+            const error = new Error("Couldn't find meter or its owner.");
+            error.statusCode = 404;
+            throw error;
+        }
+        if(meter.valveStatus === 'open') {
+            meter.valveStatus = 'closed';
+            await meter.save();
+        }
+        else{
+            meter.valveStatus = 'open';
+            await meter.save();
+        }
+        client.publish(`${userId}`, "valve is " + meter.valveStatus, (err) => {
+            if (err) {
+                console.error('Failed to publish MQTT message:', err);
+                return res.status(500).json({ error: 'Failed to toggle valve' });
+            }
+            res.status(200).json({ message: 'Notification sent successfully' });
+        });
+    }catch(err) {
+        if(!err.statusCode){
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+}
 
 exports.receiveData = async (req,res,next) => {
     const meter = await Meter.findById(req.body.device_id);
