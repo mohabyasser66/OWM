@@ -78,12 +78,12 @@ exports.toggleValve = async (req,res, next) => {
             meter.valveStatus = 'open';
             await meter.save();
         }
-        client.publish(`${userId}`, "valve is " + meter.valveStatus, (err) => {
+        client.publish(`${userId}`, meter.valveStatus, (err) => {
             if (err) {
                 console.error('Failed to publish MQTT message:', err);
                 return res.status(500).json({ error: 'Failed to toggle valve' });
             }
-            res.status(200).json({ message: 'Notification sent successfully' });
+            res.status(200).json({ message: `valve is ${meter.valveStatus}` });
         });
     }catch(err) {
         if(!err.statusCode){
