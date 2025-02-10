@@ -26,7 +26,7 @@ async function connectAll() {
 connectAll();
 
 
-client.on('message', (message) => {
+client.on('message', (topic, message) => {
     console.log(message);
 })
 
