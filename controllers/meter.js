@@ -29,7 +29,8 @@ client.on('message', async (topic, message) => {
         device_id: topic.toString(),
         liters_consumed: message.toString().liters_consumed,
         flow_rate: message.toString().flow_rate,
-        pressure_rate: message.toString().pressure_rate
+        pressure_rate: message.toString().pressure_rate,
+        created_at: Date.now()
     });
     await data.save();
 })
