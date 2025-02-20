@@ -90,7 +90,7 @@ exports.toggleValve = async (req,res, next) => {
             throw error;
         }
         if(meter.valveStatus === 'open') {
-            meter.valveStatus = 'closed';
+            meter.valveStatus = 'close';
             await meter.save();
         }
         else{
