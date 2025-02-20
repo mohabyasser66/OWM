@@ -14,20 +14,31 @@ console.error('Error:', error);
 });
 
 async function connectAll() {
-    let usersIds = [];
-    const users = await User.find();
-    users.forEach(user => {
-        usersIds.push(user._id.toString());
+    let meterIds = [];
+    const meters = await Meter.find();
+    meters.forEach(meter => {
+        meterIds.push(meter._id.toString());
     });
-    client.subscribe(usersIds);
+    client.subscribe(meterIds);
 }
-
 connectAll();
 
-
-client.on('message', (topic, message) => {
+client.on('message', async (topic, message) => {
     console.log(message.toString());
+    const data = new Data({
+        device_id: topic.toString(),
+        liters_consumed: message.toString().liters_consumed,
+        flow_rate: message.toString().flow_rate,
+        pressure_rate: message.toString().pressure_rate
+    });
+    await data.save();
 })
+
+exports.seeRealTime = async (req,res,next) => {
+    client.on('message', (topic, message) => {
+        console.log(message.toString());
+    })
+}
 
 exports.leakageDetected = async (req,res,next) => {
     const meterId = req.body.meterId;
