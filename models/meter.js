@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const meterSchema = new Schema({
     valveStatus:{
         type: String,
-        enum: ["open","closed"],
+        enum: ["open","close"],
         default: "open"
     },
     name:{
