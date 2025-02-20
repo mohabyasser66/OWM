@@ -3,7 +3,6 @@ const Meter = require('../models/meter');
 const Data = require('../models/data');
 const mqtt = require('mqtt');
 
-
 const client = mqtt.connect("mqtt://localhost");
 client.on('connect', () => {
     console.log('Connected to MQTT broker');
@@ -24,22 +23,30 @@ async function connectAll() {
 connectAll();
 
 client.on('message', async (topic, message) => {
-    const mqttMessage = JSON.parse(message);
-    const data = new Data({
-        device_id: mqttMessage.meter_id,
-        liters_consumed: mqttMessage.liters_consumed,
-        flow_rate: mqttMessage.flow_rate,
-        pressure_rate: mqttMessage.pressure_rate,
-        created_at: Date.now()
-    });
-    await data.save();
-})
+    try{
+        const mqttMessage = JSON.parse(message);
+        const data = new Data({
+            device_id: mqttMessage.meter_id,
+            liters_consumed: mqttMessage.liters_consumed,
+            flow_rate: mqttMessage.flow_rate,
+            pressure_rate: mqttMessage.pressure_rate,
+            created_at: Date.now()
+        });
+        await data.save();
+        const user = await User.findOne({ meters: mqttMessage.meter_id });
+        console.log(message);
+        client.publish(user.id, message, (err) => {
+            if (err) {
+                console.error('Failed to publish MQTT message:', err);
+            }
+        });
+    }
+    catch(error) {
+        console.error("Error processing MQTT message:", error);
+    }
+    
+});
 
-exports.seeRealTime = async (req,res,next) => {
-    client.on('message', (topic, message) => {
-        console.log(message.toString());
-    })
-}
 
 exports.leakageDetected = async (req,res,next) => {
     const meterId = req.body.meterId;
