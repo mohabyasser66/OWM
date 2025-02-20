@@ -28,7 +28,7 @@ client.on('message', async (topic, message) => {
     console.log(mqttMessage);
     console.log(topic);
     const data = new Data({
-        device_id: topic.toString(),
+        device_id: JSON.parse(topic),
         liters_consumed: mqttMessage.liters_consumed,
         flow_rate: mqttMessage.flow_rate,
         pressure_rate: mqttMessage.pressure_rate,
