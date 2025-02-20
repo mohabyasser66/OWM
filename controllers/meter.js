@@ -25,10 +25,8 @@ connectAll();
 
 client.on('message', async (topic, message) => {
     const mqttMessage = JSON.parse(message);
-    console.log(mqttMessage);
-    console.log(topic);
     const data = new Data({
-        device_id: JSON.parse(topic),
+        device_id: mqttMessage.meter_id,
         liters_consumed: mqttMessage.liters_consumed,
         flow_rate: mqttMessage.flow_rate,
         pressure_rate: mqttMessage.pressure_rate,
