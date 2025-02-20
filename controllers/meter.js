@@ -24,12 +24,14 @@ async function connectAll() {
 connectAll();
 
 client.on('message', async (topic, message) => {
-    console.log(message.toString());
+    const mqttMessage = JSON.parse(message);
+    console.log(mqttMessage);
+    console.log(topic);
     const data = new Data({
         device_id: topic.toString(),
-        liters_consumed: message.toString().liters_consumed,
-        flow_rate: message.toString().flow_rate,
-        pressure_rate: message.toString().pressure_rate,
+        liters_consumed: mqttMessage.liters_consumed,
+        flow_rate: mqttMessage.flow_rate,
+        pressure_rate: mqttMessage.pressure_rate,
         created_at: Date.now()
     });
     await data.save();
