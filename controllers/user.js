@@ -29,6 +29,11 @@ const calculateWaterBill = (consumption) => {
   return total.toFixed(2);
 };
 
+const client = mqtt.connect("mqtt://localhost");
+client.on('connect', () => {
+    console.log('Connected to MQTT broker');
+});
+
 
 
 exports.getUserData = async (req,res,next) => {
