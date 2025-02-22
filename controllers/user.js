@@ -8,6 +8,7 @@ const bcrypt = require("bcryptjs");
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const { validationResult } = require('express-validator');
+const mqtt = require('mqtt');
 
 const month = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const tierRates = [
