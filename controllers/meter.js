@@ -35,7 +35,7 @@ client.on('message', async (topic, message) => {
         await data.save();
         const user = await User.findOne({ meters: mqttMessage.meter_id });
         console.log(message);
-        client.publish(user.id, message, (err) => {
+        client.publish(`data${user.id}`, message, (err) => {
             if (err) {
                 console.error('Failed to publish MQTT message:', err);
             }
@@ -59,7 +59,7 @@ exports.leakageDetected = async (req,res,next) => {
             error.statusCode = 404;
             throw error;
         }
-        client.publish(`${userId}`, "Leakage Detected on Your Meter", (err) => {
+        client.publish(`leakage${userId}`, "Leakage Detected on Your Meter", (err) => {
             if (err) {
                 console.error('Failed to publish MQTT message:', err);
                 return res.status(500).json({ error: 'Failed to send notification' });
@@ -77,40 +77,6 @@ exports.leakageDetected = async (req,res,next) => {
     }
 }
 
-
-exports.toggleValve = async (req,res, next) => {
-    const meterId = req.body.meterId;
-    const userId = req.body.userId;
-    const meter = await Meter.findById(meterId);
-    const user = await User.findById(userId);
-    try {
-        if(!meter || !user){
-            const error = new Error("Couldn't find meter or its owner.");
-            error.statusCode = 404;
-            throw error;
-        }
-        if(meter.valveStatus === 'open') {
-            meter.valveStatus = 'close';
-            await meter.save();
-        }
-        else{
-            meter.valveStatus = 'open';
-            await meter.save();
-        }
-        client.publish(`${userId}`, meter.valveStatus, (err) => {
-            if (err) {
-                console.error('Failed to publish MQTT message:', err);
-                return res.status(500).json({ error: 'Failed to toggle valve' });
-            }
-            res.status(200).json({ message: `valve is ${meter.valveStatus}` });
-        });
-    }catch(err) {
-        if(!err.statusCode){
-            err.statusCode = 500;
-        }
-        next(err);
-    }
-}
 
 exports.receiveData = async (req,res,next) => {
     const meter = await Meter.findById(req.body.device_id);

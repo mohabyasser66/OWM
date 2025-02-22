@@ -44,4 +44,6 @@ router.post("/user/change-power", isAuth, userController.changePowerStatus);
 
 router.post("/user/calculate-bill", isAuth, userController.calculateBill);
 
+router.post("/user/valve-status", isAuth, userController.toggleValve);
+
 module.exports = router;

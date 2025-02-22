@@ -491,6 +491,38 @@ exports.changePowerStatus = async (req,res,next) => {
   
 }
 
+exports.toggleValve = async (req,res, next) => {
+    const meterId = req.body.meterId;
+    const meter = await Meter.findById(meterId);
+    try {
+        if(!meter){
+            const error = new Error("Couldn't find meter or its owner.");
+            error.statusCode = 404;
+            throw error;
+        }
+        if(meter.valveStatus === 'open') {
+            meter.valveStatus = 'close';
+            await meter.save();
+        }
+        else{
+            meter.valveStatus = 'open';
+            await meter.save();
+        }
+        client.publish(`valve${meterId}`, meter.valveStatus, (err) => {
+            if (err) {
+                console.error('Failed to publish MQTT message:', err);
+                return res.status(500).json({ error: 'Failed to toggle valve' });
+            }
+            res.status(200).json({ message: `valve is ${meter.valveStatus}` });
+        });
+    }catch(err) {
+        if(!err.statusCode){
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+}
+
 
 exports.calculateBill = async (req,res) => {
   let total = 0.00;
